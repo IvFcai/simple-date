@@ -118,10 +118,14 @@
     <form method="dialog" id="customizeForm">
       <button class="dialog-close" value="cancel" aria-label="关闭">×</button>
       <p class="eyebrow">MAKE IT YOURS</p><h2>先写好这封邀请</h2>
-      <p class="dialog-tip">邀请人填写完成后，复制专属链接发给对方。</p>
-      <label class="field"><span>邀请人昵称</span><input id="fromInput" maxlength="10" placeholder="比如：小简" /></label>
-      <label class="field"><span>对方昵称</span><input id="toInput" maxlength="10" placeholder="比如：阿满" /></label>
-      <button class="primary wide" value="default" type="submit">生成并复制邀请链接</button>
+      <p class="dialog-tip">邀请人填写完成后，生成专属链接发给对方。</p>
+      <label class="field"><span>邀请人昵称</span><input id="fromInput" maxlength="10" placeholder="比如：小简" required /></label>
+      <label class="field"><span>对方昵称</span><input id="toInput" maxlength="10" placeholder="比如：阿满" required /></label>
+      <button class="primary wide" id="generateInviteButton" type="submit">保存名字并生成邀请</button>
+      <div class="share-actions invite-actions" id="inviteActions" hidden>
+        <button class="primary" id="shareInviteButton" type="button">直接发出邀请</button>
+        <button class="secondary" id="copyInviteButton" type="button">复制专属链接</button>
+      </div>
       <p class="tiny-note dialog-status" id="inviteStatus" aria-live="polite"></p>
     </form>
   </dialog>
@@ -130,10 +134,10 @@
       <button class="dialog-close" value="cancel" aria-label="关闭">×</button>
       <p class="eyebrow">YOUR DATE TICKET</p>
       <h2>约会票做好啦</h2>
-      <p class="dialog-tip">如果没有弹出系统分享，请长按下面的票据图片发送给邀请人。</p>
-      <img id="sharePreview" alt="生成的约会回执图片" />
+      <p class="dialog-tip">如果没有弹出系统分享，请长按下面的票据图片，选择“保存到相册”或直接发送。</p>
+      <img id="sharePreview" alt="生成的约会回执图片" title="长按图片保存或转发" />
       <div class="share-actions">
-        <button class="primary" id="saveTicketButton" type="button">保存票据图片</button>
+        <button class="primary" id="saveTicketButton" type="button">下载票据图片</button>
         <button class="secondary" id="copyTicketButton" type="button">复制回执文字</button>
       </div>
       <p class="tiny-note dialog-status" id="shareStatus" aria-live="polite"></p>

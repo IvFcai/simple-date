@@ -144,7 +144,7 @@ function openSharePanel(blob){
 $('saveTicketButton').addEventListener('click',()=>{
   if(!ticketObjectUrl)return;
   const link=document.createElement('a');link.href=ticketObjectUrl;link.download=`约会回执-${state.to}-${state.from}.png`;link.click();
-  $('shareStatus').textContent='图片已保存，可以发送给邀请人啦！';
+  $('shareStatus').textContent='已请求下载；如果相册里没有，请长按上方图片选择“保存到相册”。';
 });
 
 $('copyTicketButton').addEventListener('click',async()=>{
@@ -173,13 +173,34 @@ $('copyButton').addEventListener('click',async()=>{
 
 const dialog=$('customizeDialog');
 $('customizeButton').addEventListener('click',()=>dialog.showModal());
+let generatedInviteUrl='';
+
+async function copyInviteLink(){
+  if(!generatedInviteUrl)return;
+  try{await navigator.clipboard.writeText(generatedInviteUrl);$('inviteStatus').textContent='专属链接已复制，粘贴发给对方即可！'}
+  catch{window.prompt('复制这条专属邀请链接：',generatedInviteUrl)}
+}
+
+$('copyInviteButton').addEventListener('click',copyInviteLink);
+$('shareInviteButton').addEventListener('click',async()=>{
+  if(!generatedInviteUrl)return;
+  const text=`💌 ${state.from} 想邀请 ${state.to} 赴一场小约会，点开看看吧！`;
+  try{
+    if(navigator.share){await navigator.share({title:'有一封约会邀请',text,url:generatedInviteUrl});$('inviteStatus').textContent='邀请已经发出啦 ♡'}
+    else{await copyInviteLink();$('inviteStatus').textContent='当前浏览器不支持直接分享，链接已复制，请粘贴发给对方。'}
+  }catch(error){if(error.name!=='AbortError'){await copyInviteLink();$('inviteStatus').textContent='未能调起分享，链接已复制，请粘贴发给对方。'}}
+});
+
 $('customizeForm').addEventListener('submit',event=>{
   event.preventDefault();
-  state.from=$('fromInput').value.trim()||'有人'; state.to=$('toInput').value.trim()||'特别的你';
+  state.from=$('fromInput').value.trim();state.to=$('toInput').value.trim();
   $('fromName').textContent=state.from; $('toName').textContent=state.to;
   const inviteUrl=new URL(location.href);inviteUrl.search='';inviteUrl.hash='';inviteUrl.searchParams.set('from',state.from);inviteUrl.searchParams.set('to',state.to);
-  const done=()=>{$('inviteStatus').textContent='专属邀请链接已复制，直接发给对方吧！';setTimeout(()=>dialog.close(),900)};
-  navigator.clipboard?.writeText(inviteUrl.href).then(done).catch(()=>{window.prompt('复制这条专属邀请链接：',inviteUrl.href);done()});
+  generatedInviteUrl=inviteUrl.href;
+  try{history.replaceState({},'',inviteUrl.href)}catch{}
+  $('inviteActions').hidden=false;$('customizeForm').classList.add('invite-ready');
+  $('generateInviteButton').textContent='名字已保存 ✓';
+  $('inviteStatus').textContent='专属邀请已生成，请选择发送方式。';
 });
 
 function celebrate(){
