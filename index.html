@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#fff7e8" />
+  <meta name="description" content="一封认真又可爱的约会邀请" />
+  <title>有一封约会邀请 💌</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E💌%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@500;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="paper-noise" aria-hidden="true"></div>
+  <div class="floaties" aria-hidden="true">
+    <span style="--x:8%;--delay:-1s">✿</span><span style="--x:87%;--delay:-4s">♡</span>
+    <span style="--x:20%;--delay:-7s">·</span><span style="--x:72%;--delay:-9s">✦</span>
+    <span style="--x:94%;--delay:-11s">✿</span><span style="--x:42%;--delay:-13s">♡</span>
+  </div>
+
+  <main class="stage">
+    <header class="brand" aria-label="网站标题">
+      <span class="brand-stamp">DATE<br>CLUB</span>
+      <p>一件值得期待的小事</p>
+      <button id="musicButton" class="icon-button" type="button" aria-label="开启背景音乐" title="背景音乐">♫</button>
+    </header>
+
+    <section class="card active" data-step="0" aria-labelledby="welcome-title">
+      <span class="tape tape-pink" aria-hidden="true"></span>
+      <div class="doodle doodle-star" aria-hidden="true">✦</div>
+      <div class="envelope" aria-hidden="true">
+        <div class="envelope-back"></div><div class="letter">TO<br><strong id="toName">特别的你</strong><small>一封小小邀请</small></div>
+        <div class="envelope-front"></div><div class="heart-seal">♥</div>
+      </div>
+      <p class="eyebrow">SPECIAL DELIVERY · 特别投递</p>
+      <h1 id="welcome-title"><span id="fromName">有人</span>想邀请你<br>赴一场<span class="marker">小约会</span></h1>
+      <p class="lead">天气、地点、吃什么都可以慢慢选，<br>唯一着急的是——想早点见到你。</p>
+      <button class="primary next" type="button">拆开看看 <span>→</span></button>
+      <button id="customizeButton" class="text-button" type="button">先写上我们的名字</button>
+    </section>
+
+    <section class="card" data-step="1" aria-labelledby="ask-title" hidden>
+      <span class="tape tape-yellow" aria-hidden="true"></span>
+      <div class="mascot sheep" id="askMascot" aria-hidden="true"><span class="horn left"></span><span class="horn right"></span><span class="ear left"></span><span class="ear right"></span><span class="wool"></span><span class="face" id="mascotFace">˶ᵔ ᵕ ᵔ˶</span><span class="blush b1"></span><span class="blush b2"></span></div>
+      <p class="eyebrow">A VERY SERIOUS QUESTION</p>
+      <h2 id="ask-title">可以和我一起<br><span class="marker">约会吗？</span></h2>
+      <p class="lead" id="askCopy">我准备了一点期待，还有很多真心。</p>
+      <div class="button-row chase-zone">
+        <button class="primary" id="yesButton" type="button">好呀！</button>
+        <button class="secondary" id="noButton" type="button">再想想</button>
+      </div>
+      <p class="tiny-note" id="chaseHint" aria-live="polite">请凭第一直觉作答 ฅ՞•ﻌ•՞ฅ</p>
+    </section>
+
+    <section class="card" data-step="2" aria-labelledby="when-title" hidden>
+      <span class="tape tape-green" aria-hidden="true"></span>
+      <div class="step-sticker">01<br><small>WHEN</small></div>
+      <p class="eyebrow">翻一翻我们的日历</p>
+      <h2 id="when-title">哪一天，刚好<br>可以分给我？</h2>
+      <form id="whenForm">
+        <label class="field"><span>约会日期</span><input id="dateInput" type="date" required /></label>
+        <fieldset class="time-options"><legend>碰面时间</legend>
+          <label><input type="radio" name="time" value="上午 10:30" required><span>上午<br><b>10:30</b></span></label>
+          <label><input type="radio" name="time" value="下午 14:00"><span>下午<br><b>14:00</b></span></label>
+          <label><input type="radio" name="time" value="傍晚 18:30"><span>傍晚<br><b>18:30</b></span></label>
+        </fieldset>
+        <button class="primary wide" type="submit">这天留给我们 →</button>
+      </form>
+    </section>
+
+    <section class="card card-wide" data-step="3" aria-labelledby="what-title" hidden>
+      <span class="tape tape-blue" aria-hidden="true"></span>
+      <div class="step-sticker coral">02<br><small>WHAT</small></div>
+      <p class="eyebrow">今天的快乐菜单</p>
+      <h2 id="what-title">我们约点什么？</h2>
+      <p class="lead compact">挑一个最心动的，也可以交给命运。</p>
+      <div class="activity-grid" id="activityGrid">
+        <button type="button" data-value="吃火锅"><span>🍲</span>吃火锅</button>
+        <button type="button" data-value="看电影"><span>🎞️</span>看电影</button>
+        <button type="button" data-value="逛公园"><span>🌿</span>逛公园</button>
+        <button type="button" data-value="吃甜品"><span>🍰</span>吃甜品</button>
+        <button type="button" data-value="喝咖啡"><span>☕</span>喝咖啡</button>
+        <button type="button" data-value="去兜风"><span>🚲</span>去兜风</button>
+        <button type="button" data-value="做手工"><span>🎨</span>做手工</button>
+        <button type="button" data-value="吃烧烤"><span>🍢</span>吃烧烤</button>
+        <button type="button" class="surprise" data-value="惊喜安排"><span>🎲</span>随机惊喜</button>
+      </div>
+      <button class="primary wide" id="activityNext" type="button" disabled>就这么决定啦 →</button>
+    </section>
+
+    <section class="card" data-step="4" aria-labelledby="done-title" hidden>
+      <span class="tape tape-pink" aria-hidden="true"></span>
+      <div class="ticket">
+        <div class="ticket-head"><span>DATE TICKET</span><b>♥ ADMIT TWO ♥</b></div>
+        <div class="ticket-body">
+          <p>特别约会通行证</p><h2 id="done-title"><span id="finalTo">你</span> × <span id="finalFrom">我</span></h2>
+          <dl><div><dt>DATE</dt><dd id="resultDate">—</dd></div><div><dt>TIME</dt><dd id="resultTime">—</dd></div><div><dt>PLAN</dt><dd id="resultActivity">—</dd></div></dl>
+        </div>
+        <div class="ticket-code">NO. <span id="ticketNo">0713</span> · KEEP THIS MOMENT</div>
+      </div>
+      <h3>好耶，约会成立！</h3>
+      <p class="lead">期待见面，也期待所有还没发生的小事。</p>
+      <div class="button-row final-actions">
+        <button class="primary" id="copyButton" type="button">复制约会信息</button>
+        <button class="secondary" id="restartButton" type="button">再选一次</button>
+      </div>
+      <p class="tiny-note" id="copyStatus" aria-live="polite">截个图，别让这张票弄丢啦。</p>
+    </section>
+
+    <nav class="progress" aria-label="约会邀请进度">
+      <span class="active"></span><span></span><span></span><span></span><span></span>
+    </nav>
+  </main>
+
+  <dialog id="customizeDialog">
+    <form method="dialog" id="customizeForm">
+      <button class="dialog-close" value="cancel" aria-label="关闭">×</button>
+      <p class="eyebrow">MAKE IT YOURS</p><h2>写上我们的名字</h2>
+      <label class="field"><span>邀请人昵称</span><input id="fromInput" maxlength="10" placeholder="比如：小简" /></label>
+      <label class="field"><span>对方昵称</span><input id="toInput" maxlength="10" placeholder="比如：阿满" /></label>
+      <button class="primary wide" value="default" type="submit">保存这封邀请</button>
+    </form>
+  </dialog>
+  <div id="confetti" aria-hidden="true"></div>
+  <script src="script.js"></script>
+</body>
+</html>
