@@ -36,20 +36,27 @@ function burstAround(element,items){
 }
 
 function moveNoButton(){
-  const zone=document.querySelector('.chase-zone'),button=$('noButton');
+  const card=document.querySelector('[data-step="1"]'),button=$('noButton');
   button.classList.add('running');
-  const maxX=Math.max(0,zone.clientWidth-button.offsetWidth);
-  const maxY=Math.max(0,zone.clientHeight-button.offsetHeight);
+  const bounds=card.getBoundingClientRect(),yes=$('yesButton').getBoundingClientRect();
+  const old=button.getBoundingClientRect(),margin=18;
   let x=0,y=0,tries=0;
-  do{x=Math.random()*maxX;y=Math.random()*maxY;tries++}
-  while(tries<15&&x<Math.min(185,zone.clientWidth*.48)&&y>25&&y<105);
+  do{
+    x=bounds.left+margin+Math.random()*Math.max(0,bounds.width-button.offsetWidth-margin*2);
+    y=Math.max(12,bounds.top+margin)+Math.random()*Math.max(0,Math.min(innerHeight,bounds.bottom)-button.offsetHeight-Math.max(12,bounds.top+margin)-margin);
+    tries++;
+  }while(tries<40&&(
+    Math.hypot(x-old.left,y-old.top)<110||
+    (x<yes.right+18&&x+button.offsetWidth>yes.left-18&&y<yes.bottom+18&&y+button.offsetHeight>yes.top-18)
+  ));
+  button.style.position='fixed';button.style.right='auto';
   button.style.left=`${x}px`;button.style.top=`${y}px`;
 }
 
 $('noButton').addEventListener('click',event=>{
   if(noCount>=5){
     noCount=0;$('noButton').textContent='再想想';$('noButton').classList.remove('running','settled');
-    $('noButton').style.left='';$('noButton').style.top='';$('yesButton').style.transform='';
+    $('noButton').style.position='';$('noButton').style.right='';$('noButton').style.left='';$('noButton').style.top='';$('yesButton').style.transform='';
     $('askCopy').textContent='我准备了一点期待，还有很多真心。';$('chaseHint').textContent='请凭第一直觉作答 ฅ՞•ﻌ•՞ฅ';$('mascotFace').textContent='˶ᵔ ᵕ ᵔ˶';
     showStep(0);return;
   }
@@ -67,6 +74,7 @@ $('noButton').addEventListener('click',event=>{
     burstAround(event.currentTarget,['♡','收到啦','✿']);
     $('chaseHint').textContent='收到你的心意啦，也谢谢你认真作答。';
     $('noButton').textContent='重新看看邀请';
+    $('noButton').style.position='';$('noButton').style.right='';$('noButton').style.left='';$('noButton').style.top='';
     $('noButton').classList.add('settled');$('mascotFace').textContent=noFaces[4];
   }
 });
@@ -86,25 +94,81 @@ document.querySelectorAll('#activityGrid button').forEach(button=>button.addEven
   button.classList.add('selected'); state.activity=button.dataset.value; $('activityNext').disabled=false;
 }));
 
+let ticketBlob=null,ticketObjectUrl='';
+
 $('activityNext').addEventListener('click',()=>{
   const date=new Date(`${state.date}T12:00:00`);
   $('resultDate').textContent=new Intl.DateTimeFormat('zh-CN',{month:'long',day:'numeric',weekday:'short'}).format(date);
   $('resultTime').textContent=state.time; $('resultActivity').textContent=state.activity;
   $('finalFrom').textContent=state.from; $('finalTo').textContent=state.to;
   $('ticketNo').textContent=state.date.replaceAll('-','').slice(4);
-  showStep(4); celebrate();
+  ticketBlob=null;showStep(4);celebrate();
+  makeTicketImage().then(blob=>{ticketBlob=blob});
 });
 
 $('restartButton').addEventListener('click',()=>{
   state.date=state.time=state.activity=''; $('whenForm').reset();
+  ticketBlob=null;
   document.querySelectorAll('#activityGrid button').forEach(item=>item.classList.remove('selected'));
   $('activityNext').disabled=true; showStep(2);
 });
 
+function ticketText(){return `💌 给 ${state.from} 的约会回执\n${state.to} 接受了你的邀请！\n📅 ${$('resultDate').textContent} ${state.time}\n🎈 约会计划：${state.activity}\n约好了，不见不散 ♡`}
+
+function makeTicketImage(){
+  return new Promise(resolve=>{
+    const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');canvas.width=1080;canvas.height=1350;
+    ctx.fillStyle='#fff7e8';ctx.fillRect(0,0,1080,1350);
+    ctx.fillStyle='#ef4b78';ctx.fillRect(70,70,940,180);
+    ctx.fillStyle='#fff';ctx.font='900 42px serif';ctx.fillText('DATE TICKET  ·  ADMIT TWO',120,150);
+    ctx.font='900 30px serif';ctx.fillText('一张认真生效的约会回执  ♡',120,210);
+    ctx.fillStyle='#fffdf7';ctx.strokeStyle='#342824';ctx.lineWidth=8;ctx.beginPath();ctx.roundRect(70,250,940,980,35);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#c72f5d';ctx.font='900 38px serif';ctx.fillText('约会确认成功',135,355);
+    ctx.fillStyle='#342824';ctx.font='900 72px "Noto Serif SC",serif';ctx.fillText(`${state.to}  ×  ${state.from}`,135,475);
+    ctx.setLineDash([20,14]);ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(135,545);ctx.lineTo(945,545);ctx.stroke();ctx.setLineDash([]);
+    const rows=[['DATE / 日期',$('resultDate').textContent],['TIME / 时间',state.time],['PLAN / 计划',state.activity]];
+    rows.forEach(([label,value],i)=>{const y=650+i*175;ctx.fillStyle='#9c7667';ctx.font='900 25px sans-serif';ctx.fillText(label,135,y);ctx.fillStyle='#342824';ctx.font='900 48px "Noto Serif SC",serif';ctx.fillText(value,135,y+65)});
+    ctx.fillStyle='#ffd862';ctx.fillRect(120,1135,840,4);ctx.fillStyle='#c72f5d';ctx.font='36px "Noto Serif SC",serif';ctx.fillText('约好了，不见不散  ♡',330,1195);
+    ctx.fillStyle='#8c7469';ctx.font='24px monospace';ctx.fillText(`NO. ${$('ticketNo').textContent}  ·  KEEP THIS MOMENT`,300,1285);
+    canvas.toBlob(resolve,'image/png');
+  });
+}
+
+const shareDialog=$('shareDialog');
+function openSharePanel(blob){
+  if(ticketObjectUrl)URL.revokeObjectURL(ticketObjectUrl);
+  ticketObjectUrl=URL.createObjectURL(blob);$('sharePreview').src=ticketObjectUrl;
+  $('shareStatus').textContent='';shareDialog.showModal();
+}
+
+$('saveTicketButton').addEventListener('click',()=>{
+  if(!ticketObjectUrl)return;
+  const link=document.createElement('a');link.href=ticketObjectUrl;link.download=`约会回执-${state.to}-${state.from}.png`;link.click();
+  $('shareStatus').textContent='图片已保存，可以发送给邀请人啦！';
+});
+
+$('copyTicketButton').addEventListener('click',async()=>{
+  try{await navigator.clipboard.writeText(ticketText());$('shareStatus').textContent='回执文字已复制 ♡'}
+  catch{window.prompt('复制下面的约会回执：',ticketText())}
+});
+
 $('copyButton').addEventListener('click',async()=>{
-  const text=`💌 ${state.from} 和 ${state.to} 的约会成立啦！\n📅 ${$('resultDate').textContent} ${state.time}\n🎈 约会计划：${state.activity}\n期待见面，也期待所有还没发生的小事。`;
-  try{await navigator.clipboard.writeText(text);$('copyStatus').textContent='复制好啦，快把约会票发出去吧！'}
-  catch{window.prompt('复制下面的约会信息：',text)}
+  const button=$('copyButton');button.disabled=true;button.textContent='正在制作约会票…';
+  const text=ticketText(),blob=ticketBlob||await makeTicketImage();ticketBlob=blob;
+  const file=new File([blob],`约会回执-${state.to}-${state.from}.png`,{type:'image/png'});
+  try{
+    if(navigator.share&&navigator.canShare?.({files:[file]})){
+      await navigator.share({title:'约会回执',text,files:[file]});
+      $('copyStatus').textContent='约会回执已经出发啦 ♡';
+    }else{
+      openSharePanel(blob);
+      $('copyStatus').textContent='请长按票据图片，或保存后发送给邀请人。';
+    }
+  }catch(error){
+    if(error.name==='AbortError')$('copyStatus').textContent='已取消分享，需要时可以再点一次。';
+    else{openSharePanel(blob);$('copyStatus').textContent='浏览器未能调起分享，请从票据面板发送。'}
+  }
+  finally{button.disabled=false;button.textContent='生成并转发约会票'}
 });
 
 const dialog=$('customizeDialog');
@@ -112,7 +176,10 @@ $('customizeButton').addEventListener('click',()=>dialog.showModal());
 $('customizeForm').addEventListener('submit',event=>{
   event.preventDefault();
   state.from=$('fromInput').value.trim()||'有人'; state.to=$('toInput').value.trim()||'特别的你';
-  $('fromName').textContent=state.from; $('toName').textContent=state.to; dialog.close();
+  $('fromName').textContent=state.from; $('toName').textContent=state.to;
+  const inviteUrl=new URL(location.href);inviteUrl.search='';inviteUrl.hash='';inviteUrl.searchParams.set('from',state.from);inviteUrl.searchParams.set('to',state.to);
+  const done=()=>{$('inviteStatus').textContent='专属邀请链接已复制，直接发给对方吧！';setTimeout(()=>dialog.close(),900)};
+  navigator.clipboard?.writeText(inviteUrl.href).then(done).catch(()=>{window.prompt('复制这条专属邀请链接：',inviteUrl.href);done()});
 });
 
 function celebrate(){
@@ -126,8 +193,8 @@ function celebrate(){
   setTimeout(()=>wrap.innerHTML='',3900);
 }
 
-let audio;
-$('musicButton').addEventListener('click',()=>{
+let audio,musicEnabled=true;
+function ensureAudio(){
   if(!audio){
     const ctx=new (window.AudioContext||window.webkitAudioContext)();let timer,index=0;
     const melody=[659.25,783.99,880,783.99,659.25,523.25,587.33,659.25,523.25,659.25,783.99,1046.5,880,783.99,659.25,587.33];
@@ -135,12 +202,31 @@ $('musicButton').addEventListener('click',()=>{
     const tone=(frequency,duration=.2,volume=.035,type='triangle')=>{const now=ctx.currentTime,osc=ctx.createOscillator(),gain=ctx.createGain();osc.type=type;osc.frequency.setValueAtTime(frequency,now);gain.gain.setValueAtTime(.001,now);gain.gain.exponentialRampToValueAtTime(volume,now+.015);gain.gain.exponentialRampToValueAtTime(.001,now+duration);osc.connect(gain).connect(ctx.destination);osc.start(now);osc.stop(now+duration+.02)};
     audio={ctx,playing:false,start(){ctx.resume();this.playing=true;const beat=()=>{if(!this.playing)return;tone(melody[index%melody.length],.19,.032,'triangle');if(index%2===0)tone(melody[index%melody.length]/2,.14,.012,'sine');if(index%4===0)tone(bass[(index/4)%bass.length],.38,.025,'sine');index++};beat();timer=setInterval(beat,235)},stop(){this.playing=false;clearInterval(timer)}};
   }
-  if(audio.playing){audio.stop();$('musicButton').classList.remove('on');$('musicButton').setAttribute('aria-label','开启背景音乐')}
-  else{audio.start();$('musicButton').classList.add('on');$('musicButton').setAttribute('aria-label','关闭背景音乐')}
+  return audio;
+}
+
+function updateMusicButton(){
+  $('musicButton').classList.toggle('on',musicEnabled);
+  $('musicButton').setAttribute('aria-label',musicEnabled?'关闭背景音乐':'开启背景音乐');
+  $('musicButton').title=musicEnabled?'背景音乐已开启':'背景音乐已关闭';
+}
+
+function startDefaultMusic(event){
+  if(event.target.closest('#musicButton')||!musicEnabled)return;
+  ensureAudio().start();
+  document.removeEventListener('pointerdown',startDefaultMusic);
+}
+document.addEventListener('pointerdown',startDefaultMusic);
+
+$('musicButton').addEventListener('click',()=>{
+  musicEnabled=!musicEnabled;
+  if(musicEnabled)ensureAudio().start();else if(audio)audio.stop();
+  updateMusicButton();
 });
 
 const params=new URLSearchParams(location.search);
 if(params.get('from')||params.get('to')){
   state.from=params.get('from')||state.from;state.to=params.get('to')||state.to;
   $('fromName').textContent=state.from;$('toName').textContent=state.to;
+  $('fromInput').value=state.from==='有人'?'':state.from;$('toInput').value=state.to==='特别的你'?'':state.to;
 }

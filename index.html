@@ -24,7 +24,7 @@
     <header class="brand" aria-label="网站标题">
       <span class="brand-stamp">DATE<br>CLUB</span>
       <p>一件值得期待的小事</p>
-      <button id="musicButton" class="icon-button" type="button" aria-label="开启背景音乐" title="背景音乐">♫</button>
+      <button id="musicButton" class="icon-button on" type="button" aria-label="背景音乐默认开启，将在首次触碰后播放" title="背景音乐默认开启">♫</button>
     </header>
 
     <section class="card active" data-step="0" aria-labelledby="welcome-title">
@@ -101,12 +101,12 @@
         <div class="ticket-code">NO. <span id="ticketNo">0713</span> · KEEP THIS MOMENT</div>
       </div>
       <h3>好耶，约会成立！</h3>
-      <p class="lead">期待见面，也期待所有还没发生的小事。</p>
+      <p class="lead">约定已经写进票根，把这张约会回执交给邀请人吧。</p>
       <div class="button-row final-actions">
-        <button class="primary" id="copyButton" type="button">复制约会信息</button>
+        <button class="primary" id="copyButton" type="button">生成并转发约会票</button>
         <button class="secondary" id="restartButton" type="button">再选一次</button>
       </div>
-      <p class="tiny-note" id="copyStatus" aria-live="polite">截个图，别让这张票弄丢啦。</p>
+      <p class="tiny-note" id="copyStatus" aria-live="polite">点击生成图片，把好消息送回去 ♡</p>
     </section>
 
     <nav class="progress" aria-label="约会邀请进度">
@@ -117,10 +117,26 @@
   <dialog id="customizeDialog">
     <form method="dialog" id="customizeForm">
       <button class="dialog-close" value="cancel" aria-label="关闭">×</button>
-      <p class="eyebrow">MAKE IT YOURS</p><h2>写上我们的名字</h2>
+      <p class="eyebrow">MAKE IT YOURS</p><h2>先写好这封邀请</h2>
+      <p class="dialog-tip">邀请人填写完成后，复制专属链接发给对方。</p>
       <label class="field"><span>邀请人昵称</span><input id="fromInput" maxlength="10" placeholder="比如：小简" /></label>
       <label class="field"><span>对方昵称</span><input id="toInput" maxlength="10" placeholder="比如：阿满" /></label>
-      <button class="primary wide" value="default" type="submit">保存这封邀请</button>
+      <button class="primary wide" value="default" type="submit">生成并复制邀请链接</button>
+      <p class="tiny-note dialog-status" id="inviteStatus" aria-live="polite"></p>
+    </form>
+  </dialog>
+  <dialog id="shareDialog" class="share-dialog">
+    <form method="dialog">
+      <button class="dialog-close" value="cancel" aria-label="关闭">×</button>
+      <p class="eyebrow">YOUR DATE TICKET</p>
+      <h2>约会票做好啦</h2>
+      <p class="dialog-tip">如果没有弹出系统分享，请长按下面的票据图片发送给邀请人。</p>
+      <img id="sharePreview" alt="生成的约会回执图片" />
+      <div class="share-actions">
+        <button class="primary" id="saveTicketButton" type="button">保存票据图片</button>
+        <button class="secondary" id="copyTicketButton" type="button">复制回执文字</button>
+      </div>
+      <p class="tiny-note dialog-status" id="shareStatus" aria-live="polite"></p>
     </form>
   </dialog>
   <div id="confetti" aria-hidden="true"></div>
