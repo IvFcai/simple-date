@@ -103,10 +103,11 @@
       <h3>好耶，约会成立！</h3>
       <p class="lead">约定已经写进票根，把这张约会回执交给邀请人吧。</p>
       <div class="button-row final-actions">
-        <button class="primary" id="copyButton" type="button">生成并转发约会票</button>
+        <button class="secondary" id="copyButton" type="button">查看 / 保存约会票</button>
+        <button class="primary" id="forwardResultButton" type="button">转发约会信息</button>
         <button class="secondary" id="restartButton" type="button">再选一次</button>
       </div>
-      <p class="tiny-note" id="copyStatus" aria-live="polite">点击生成图片，把好消息送回去 ♡</p>
+      <p class="tiny-note" id="copyStatus" aria-live="polite">把好消息送回给邀请人吧 ♡</p>
     </section>
 
     <nav class="progress" aria-label="约会邀请进度">
@@ -134,11 +135,12 @@
       <button class="dialog-close" value="cancel" aria-label="关闭">×</button>
       <p class="eyebrow">YOUR DATE TICKET</p>
       <h2>约会票做好啦</h2>
-      <p class="dialog-tip">如果没有弹出系统分享，请长按下面的票据图片，选择“保存到相册”或直接发送。</p>
+      <p class="dialog-tip" id="shareHelp">如果没有弹出系统分享，请长按下面的票据图片，选择“保存到相册”或直接发送。</p>
       <img id="sharePreview" alt="生成的约会回执图片" title="长按图片保存或转发" />
       <div class="share-actions">
         <button class="primary" id="saveTicketButton" type="button">下载票据图片</button>
         <button class="secondary" id="copyTicketButton" type="button">复制回执文字</button>
+        <button class="primary share-link-button" id="copyResultLinkButton" type="button">转发约会信息</button>
       </div>
       <p class="tiny-note dialog-status" id="shareStatus" aria-live="polite"></p>
     </form>

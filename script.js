@@ -94,7 +94,7 @@ document.querySelectorAll('#activityGrid button').forEach(button=>button.addEven
   button.classList.add('selected'); state.activity=button.dataset.value; $('activityNext').disabled=false;
 }));
 
-let ticketBlob=null,ticketObjectUrl='';
+let ticketAsset=null,ticketObjectUrl='',generatedResultUrl='';
 
 $('activityNext').addEventListener('click',()=>{
   const date=new Date(`${state.date}T12:00:00`);
@@ -102,27 +102,41 @@ $('activityNext').addEventListener('click',()=>{
   $('resultTime').textContent=state.time; $('resultActivity').textContent=state.activity;
   $('finalFrom').textContent=state.from; $('finalTo').textContent=state.to;
   $('ticketNo').textContent=state.date.replaceAll('-','').slice(4);
-  ticketBlob=null;showStep(4);celebrate();
-  makeTicketImage().then(blob=>{ticketBlob=blob});
+  ticketAsset=null;generatedResultUrl=buildResultUrl();showStep(4);celebrate();
+  makeTicketImage().then(asset=>{ticketAsset=asset}).catch(()=>{});
 });
 
 $('restartButton').addEventListener('click',()=>{
   state.date=state.time=state.activity=''; $('whenForm').reset();
-  ticketBlob=null;
+  ticketAsset=null;generatedResultUrl='';
   document.querySelectorAll('#activityGrid button').forEach(item=>item.classList.remove('selected'));
   $('activityNext').disabled=true; showStep(2);
 });
 
 function ticketText(){return `💌 给 ${state.from} 的约会回执\n${state.to} 接受了你的邀请！\n📅 ${$('resultDate').textContent} ${state.time}\n🎈 约会计划：${state.activity}\n约好了，不见不散 ♡`}
 
+function buildResultUrl(){
+  const url=new URL(location.href);url.search='';url.hash='';
+  [['from',state.from],['to',state.to],['date',state.date],['time',state.time],['activity',state.activity],['result','1']].forEach(([key,value])=>url.searchParams.set(key,value));
+  return url.href;
+}
+
+function dataUrlToBlob(dataUrl){
+  const [meta,data]=dataUrl.split(','),bytes=atob(data),array=new Uint8Array(bytes.length);
+  for(let i=0;i<bytes.length;i++)array[i]=bytes.charCodeAt(i);
+  return new Blob([array],{type:(meta.match(/data:(.*?);/)||[])[1]||'image/png'});
+}
+
 function makeTicketImage(){
-  return new Promise(resolve=>{
+  return new Promise((resolve,reject)=>{
     const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');canvas.width=1080;canvas.height=1350;
+    if(!ctx){reject(new Error('Canvas unavailable'));return}
     ctx.fillStyle='#fff7e8';ctx.fillRect(0,0,1080,1350);
     ctx.fillStyle='#ef4b78';ctx.fillRect(70,70,940,180);
     ctx.fillStyle='#fff';ctx.font='900 42px serif';ctx.fillText('DATE TICKET  ·  ADMIT TWO',120,150);
     ctx.font='900 30px serif';ctx.fillText('一张认真生效的约会回执  ♡',120,210);
-    ctx.fillStyle='#fffdf7';ctx.strokeStyle='#342824';ctx.lineWidth=8;ctx.beginPath();ctx.roundRect(70,250,940,980,35);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#fffdf7';ctx.strokeStyle='#342824';ctx.lineWidth=8;ctx.beginPath();
+    if(ctx.roundRect)ctx.roundRect(70,250,940,980,35);else{ctx.moveTo(105,250);ctx.lineTo(975,250);ctx.quadraticCurveTo(1010,250,1010,285);ctx.lineTo(1010,1195);ctx.quadraticCurveTo(1010,1230,975,1230);ctx.lineTo(105,1230);ctx.quadraticCurveTo(70,1230,70,1195);ctx.lineTo(70,285);ctx.quadraticCurveTo(70,250,105,250)}ctx.fill();ctx.stroke();
     ctx.fillStyle='#c72f5d';ctx.font='900 38px serif';ctx.fillText('约会确认成功',135,355);
     ctx.fillStyle='#342824';ctx.font='900 72px "Noto Serif SC",serif';ctx.fillText(`${state.to}  ×  ${state.from}`,135,475);
     ctx.setLineDash([20,14]);ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(135,545);ctx.lineTo(945,545);ctx.stroke();ctx.setLineDash([]);
@@ -130,21 +144,23 @@ function makeTicketImage(){
     rows.forEach(([label,value],i)=>{const y=650+i*175;ctx.fillStyle='#9c7667';ctx.font='900 25px sans-serif';ctx.fillText(label,135,y);ctx.fillStyle='#342824';ctx.font='900 48px "Noto Serif SC",serif';ctx.fillText(value,135,y+65)});
     ctx.fillStyle='#ffd862';ctx.fillRect(120,1135,840,4);ctx.fillStyle='#c72f5d';ctx.font='36px "Noto Serif SC",serif';ctx.fillText('约好了，不见不散  ♡',330,1195);
     ctx.fillStyle='#8c7469';ctx.font='24px monospace';ctx.fillText(`NO. ${$('ticketNo').textContent}  ·  KEEP THIS MOMENT`,300,1285);
-    canvas.toBlob(resolve,'image/png');
+    try{const dataUrl=canvas.toDataURL('image/png');resolve({dataUrl,blob:dataUrlToBlob(dataUrl)})}catch(error){reject(error)}
   });
 }
 
 const shareDialog=$('shareDialog');
-function openSharePanel(blob){
-  if(ticketObjectUrl)URL.revokeObjectURL(ticketObjectUrl);
-  ticketObjectUrl=URL.createObjectURL(blob);$('sharePreview').src=ticketObjectUrl;
-  $('shareStatus').textContent='';shareDialog.showModal();
+function isWeChat(){return /MicroMessenger/i.test(navigator.userAgent)}
+function openSharePanel(asset){
+  ticketObjectUrl=asset.dataUrl;$('sharePreview').src=asset.dataUrl;
+  $('shareHelp').textContent=isWeChat()?'微信内请长按票据图片保存；也可以复制下方回执链接发给邀请人。':'长按票据图片可保存；也可以下载图片或复制回执链接。';
+  $('shareHelp').classList.toggle('wechat-tip',isWeChat());
+  $('shareStatus').textContent='';if(!shareDialog.open)shareDialog.showModal();
 }
 
 $('saveTicketButton').addEventListener('click',()=>{
   if(!ticketObjectUrl)return;
   const link=document.createElement('a');link.href=ticketObjectUrl;link.download=`约会回执-${state.to}-${state.from}.png`;link.click();
-  $('shareStatus').textContent='已请求下载；如果相册里没有，请长按上方图片选择“保存到相册”。';
+  $('shareStatus').textContent='已请求下载；微信或 iPhone 请直接长按上方图片保存到相册。';
 });
 
 $('copyTicketButton').addEventListener('click',async()=>{
@@ -152,23 +168,33 @@ $('copyTicketButton').addEventListener('click',async()=>{
   catch{window.prompt('复制下面的约会回执：',ticketText())}
 });
 
+async function forwardResultInfo(statusElement){
+  if(!generatedResultUrl)generatedResultUrl=buildResultUrl();
+  const text=ticketText();
+  try{
+    if(!isWeChat()&&typeof navigator.share==='function'){
+      await navigator.share({title:'约会回执',text,url:generatedResultUrl});
+      statusElement.textContent='约会信息已经发出啦 ♡';return;
+    }
+    await navigator.clipboard.writeText(`${text}\n${generatedResultUrl}`);
+    statusElement.textContent='约会信息已复制，请粘贴发送给邀请人。';
+  }catch(error){
+    if(error.name==='AbortError'){statusElement.textContent='已取消转发，需要时可以再点一次。';return}
+    window.prompt('复制这条约会信息发给邀请人：',`${text}\n${generatedResultUrl}`);
+    statusElement.textContent='复制后粘贴发送给邀请人即可。';
+  }
+}
+
+$('copyResultLinkButton').addEventListener('click',()=>forwardResultInfo($('shareStatus')));
+$('forwardResultButton').addEventListener('click',()=>forwardResultInfo($('copyStatus')));
+
 $('copyButton').addEventListener('click',async()=>{
   const button=$('copyButton');button.disabled=true;button.textContent='正在制作约会票…';
-  const text=ticketText(),blob=ticketBlob||await makeTicketImage();ticketBlob=blob;
-  const file=new File([blob],`约会回执-${state.to}-${state.from}.png`,{type:'image/png'});
   try{
-    if(navigator.share&&navigator.canShare?.({files:[file]})){
-      await navigator.share({title:'约会回执',text,files:[file]});
-      $('copyStatus').textContent='约会回执已经出发啦 ♡';
-    }else{
-      openSharePanel(blob);
-      $('copyStatus').textContent='请长按票据图片，或保存后发送给邀请人。';
-    }
-  }catch(error){
-    if(error.name==='AbortError')$('copyStatus').textContent='已取消分享，需要时可以再点一次。';
-    else{openSharePanel(blob);$('copyStatus').textContent='浏览器未能调起分享，请从票据面板发送。'}
-  }
-  finally{button.disabled=false;button.textContent='生成并转发约会票'}
+    const asset=ticketAsset||await makeTicketImage();ticketAsset=asset;openSharePanel(asset);
+    $('copyStatus').textContent='票据已经生成，可以保存或转发约会信息。';
+  }catch{$('copyStatus').textContent='票据生成失败，但仍可点击“转发约会信息”。'}
+  finally{button.disabled=false;button.textContent='查看 / 保存约会票'}
 });
 
 const dialog=$('customizeDialog');
@@ -250,4 +276,14 @@ if(params.get('from')||params.get('to')){
   state.from=params.get('from')||state.from;state.to=params.get('to')||state.to;
   $('fromName').textContent=state.from;$('toName').textContent=state.to;
   $('fromInput').value=state.from==='有人'?'':state.from;$('toInput').value=state.to==='特别的你'?'':state.to;
+}
+if(params.get('result')==='1'&&params.get('date')&&params.get('time')&&params.get('activity')){
+  state.date=params.get('date');state.time=params.get('time');state.activity=params.get('activity');
+  const date=new Date(`${state.date}T12:00:00`);
+  $('resultDate').textContent=new Intl.DateTimeFormat('zh-CN',{month:'long',day:'numeric',weekday:'short'}).format(date);
+  $('resultTime').textContent=state.time;$('resultActivity').textContent=state.activity;
+  $('finalFrom').textContent=state.from;$('finalTo').textContent=state.to;
+  $('ticketNo').textContent=state.date.replaceAll('-','').slice(4);
+  generatedResultUrl=location.href;showStep(4);
+  makeTicketImage().then(asset=>{ticketAsset=asset}).catch(()=>{});
 }
